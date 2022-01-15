@@ -15,6 +15,7 @@ Below is an in-detail description of each step of the TLSNotary protocol:
 5. [Receiving the webserver response](#section5)
 6. [Contents of the notarization document](#section6)
 7. [Verifying the notarization document](#section7)
+8. [Extending the protocol to hide sensitive data](#section8)
 
 
 
@@ -260,3 +261,27 @@ Any third party who trusts the Notary's pubkey and has a list of trusted root CA
 - Check that the commitment(1) matches the webserver response(15)
 - Check MAC of the response(15) and decrypt the response
 
+
+## 8. Extending the protocol to hide sensitive data. <a name="section8"></a>
+
+The protocol can be extended to enable Client to keep any sensitive data of the TLS transcript hidden from a verifier (a third party) while still proving the authenticity of the TLS transcript.
+The previous assumption that Notary was a malicious garbler is not valid anymore in this extended protocol. Now, any malicious garbling will be immediately detected by the Client by checking the evaluated circuit's output against the correct output. This allows to use a less expensive semi-honest model where Notary acts exclusively as the garbler and Client as the evaluator.
+For simplicity of explanation, the below protocol described hiding sensitive data in the webserver response but it can just as easily be applied to hide sensitive data in the Client's request.
+
+The protocol runs exactly as the base protocol up until and including Step 4 after which the protocol changes: 
+
+- Parties use GC 2PC to compute encrypted counter blocks for the webserver response. Each party inputs their xor share of the server_write_key (swk) and server_write_iv (siv) into the circuit. The circuit's plaintext output is encrypted counter blocks. The circuit's encoded outputs go to Client. 
+
+- Notary must ensure that Client uses the same swk/siv share as the input to the circuit which was used when checking the Server Finished message.
+
+- After Client evaluates the circuit, he obtains encoded outputs for each bit of the encrypted counter blocks. Client selects only those encoded outputs which correspond to the part of the webserver response which Client wants to make public and sends to Notary a commitment to those encoded outputs. (Optionally, Client may also send to Notary a commitment to the secret part of the webserver response if the Client intends to prove in zero knowledge the content of the secret part.)
+
+- Notary sends back the decoding table and his TLS key shares.
+
+- Client gets full TLS keys and decrypts the webserver response. Client uses the decoding table to decode his encoded output from the circuit and checks that the decoded values from the circuit match the decrypted webserver response. If not, the protocol aborts because Notary was cheating.
+
+- Notary signs the decoding table and Client's commitment to the encoded outputs.
+
+(Note that the format of the notarization document in Section 6 must be modified to reflect this extended protocol).
+
+- When the verifier obtains the notarization document, he decodes Client's encoded outputs (for public data) using the Notary's decoding table and obtains encrypted counter blocks (ECB). The verifier xors ECB with the webserver response to get the plaintext which Clients wants to reveal. The remaining part of the webserver response for which Client did not provide encoded outputs remains redacted from the verifier's point of view.
