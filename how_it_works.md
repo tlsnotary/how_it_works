@@ -133,9 +133,8 @@ The protocol described above is secure against Notary sending malicious inputs. 
 
 Using Garbled Circuit (GC) (https://en.wikipedia.org/wiki/Garbled_circuit), each party provides their PMS share as an input to the circuit. Notary acts as the garbler. Client acts as the evaluator. The circuit combines the PMS shares, computes TLS's PRF function and outputs XOR shares of TLS session keys to each party. Also the circuit builds the Client Finished message and checks the Server Finished message.
 
-In order to prevent malicious garbling usually the protocol called Authenticated Garbling (AG2PC) (https://eprint.iacr.org/2017/030) would be used. However, AG2PC has a high bandwidth requirement: ~500 bytes need to sent for each AND gate of the circuit. For a standard 2KB request, using AG2PC would mean Client has to download 320MB of data from Notary.
-
-We describe a technique which allows us to reduce the bandwidth by a factor of 5 compared to AG2PC. The essense of it is that both Notary and Client take turns acting as a garbler and as an evaluator of the same circuit:
+In order to prevent malicious garbling, a dual execution protocol is used where Notary and Client take turns garbling/evaluating the same circuit. This reduces the bandwidth requirement by a factor of 5 compared to the state-of-the-art Authenticated Garbling (AG) (https://eprint.iacr.org/2017/030). (For reference: a standard 2KB request using AG would require Client to download 320MB of data from Notary).
+The dual execution protocol is as follows:
 
 1. N acts as the garbler and C acts as the evaluator of a circuit. C evaluates the circuit, gets output $OUT_c$.
 2. C acts as the garbler and N acts as the evaluator of the same circuit. N evaluates the circuit, gets output $OUT_n$.
