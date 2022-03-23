@@ -64,66 +64,99 @@ In the beginning, Notary generates a Paillier keypair and sends the public key t
 ### 1.1. Computing $A = (y_q^2 - 2y_qy_p + y_p^2)$
 
 Notary:
-- sends $E(y_q^2)$ and $E(-2y_q)$
+
+1. sends $E(y_q^2)$ and $E(-2y_q)$
 
 Client:
-- computes $E(y_p^2)$
-- computes $E(A) = E(y_q^2) + E(-2y_q)*y_p + E(y_p^2) $
-- picks random masks $M_A$ and $N_{A}$ and computes $E(A*M_A+N_A)$
-- sends $E(A*M_A+N_A)$ and $(N_A \mod p)$
+
+2. computes $E(y_p^2)$
+
+3. computes $E(A) = E(y_q^2) + E(-2y_q)*y_p + E(y_p^2) $
+
+4. picks random masks $M_A$ and $N_{A}$ and computes $E(A*M_A+N_A)$
+
+5. sends $E(A*M_A+N_A)$ and $(N_A \mod p)$
 
 (Note that here $N_A$ (as well as $N_b$ and $N_B$ below) is crucial, as without it Notary would be able to factorize $A*M_A$ and learn A.)
 
 Notary:
-- decrypts and gets $(A*M_A+N_A)$
-- reduces $(A*M_A+N_A) \mod p$
-- computes $A*M_A \mod p = (A*M_A+N_A) \mod p - N_A \mod p$
+
+6. decrypts and gets $(A*M_A+N_A)$
+
+7. reduces $(A*M_A+N_A) \mod p$
+
+8. computes $(A*M_A) \mod p = (A * M_A+N_A) \mod p - N_A \mod p$
 
 
 ### 1.2. Computing $B =(x_q-x_p)^{p-3}$
 
-Notary: 
-- sends $E(x_q)$
+Notary:
+
+1. sends $E(x_q)$
 
 Client:
-- lets $b = x_q-x_p$
-- computes $E(-x_p)$
-- computes $E(b) = E(x_q) + E(-x_p)$
-- picks random masks $M_b$ and $N_b$ and computes $E(b*M_b + N_b)$
-- sends $E(b*M_b + N_b)$ and ($N_b \mod p$)
+
+2. lets $b = x_q-x_p$
+
+3. computes $E(-x_p)$
+
+4. computes $E(b) = E(x_q) + E(-x_p)$
+
+5. picks random masks $M_b$ and $N_b$ and computes $E(b*M_b + N_b)$
+
+6. sends $E(b*M_b + N_b)$ and ($N_b \mod p$)
 
 Notary:
-- decrypts and gets $(b*M_b + N_b)$
-- reduces $(b*M_b + N_b) \mod p$
-- computes $b*M_b \mod p = (b*M_b + N_b) \mod p - N_b \mod p$
-- sends $E((b*M_b)^{p-3} \mod p)$
+
+7. decrypts and gets $(b*M_b + N_b)$
+
+8. reduces $(b*M_b + N_b) \mod p$
+
+9. computes $(b * M_b) \mod p = (b * M_b + N_b) \mod p - N_b \mod p$
+
+10. sends $E((b*M_b)^{p-3} \mod p)$
 
 Client:
-- computes multiplicative inverse $inv = (M_b^{p-3})^{-1}\mod p$
-- computes $E((b*M_b)^{p-3} \mod p) * inv = E(b^{p-3}*M_b^{p-3}*(M_b^{p-3})^{-1}) = E(b^{p-3}) = E(B)$
-- picks random masks $M_B$ and $N_B$ and computes $E(B*M_B + N_B)$
-- sends $E(B*M_B + N_B)$ and $N_B \mod p$
+
+11. computes multiplicative inverse $inv = (M_b^{p-3})^{-1}\mod p$
+
+12. computes $E((b*M_b)^{p-3} \mod p) * inv = E(b^{p-3} * M_b^{p-3} * (M_b^{p-3})^{-1}) = E(b^{p-3}) = E(B)$
+
+13. picks random masks $M_B$ and $N_B$ and computes $E(B*M_B + N_B)$
+
+14. sends $E(B*M_B + N_B)$ and $N_B \mod p$
 
 Notary:
-- decrypts and gets $(B*M_B + N_B)$
-- reduces $(B*M_B + N_B) \mod p$
-- computes $B*M_B \mod p = (B*M_B + N_B) \mod p - N_B \mod p$
+
+15. decrypts and gets $(B*M_B + N_B)$
+
+16. reduces $(B*M_B + N_B) \mod p$
+
+17. computes $(B * M_B) \mod p = (B * M_B + N_B) \mod p - N_B \mod p$
 
 ### 1.3. Computing A*B+C
 
 Notary 
-- sends $E(A*M_A*B*M_B)$ and $E(-x_q)$
+
+1. sends $E(A * M_A * B * M_B)$ and $E(-x_q)$
 
 Client:
-- computes $E(A*B) = E(A*M_A*B*M_B) * (M_A*M_B)^{-1}$
-- computes $E(-x_p)$
-- computes $E(A*B+C) = E(A*B) + E(-x_q) + E(-x_p)$
-- applies a random mask S_q and sends $E(A*B+C + S_q)$
-- computes his additive PMS share: $s_q = (S_q \mod p)$ 
+
+2. computes $E(A*B) = E(A * M_A * B * M_B) * (M_A * M_B)^{-1}$
+
+3. computes $E(-x_p)$
+
+4. computes $E(A * B+C) = E(A * B) + E(-x_q) + E(-x_p)$
+
+5. applies a random mask S_q and sends $E(A*B+C + S_q)$
+
+6. computes his additive PMS share: $s_q = (S_q \mod p)$ 
 
 Notary:
-- decrypts and gets $A*B+C + S_q$
-- computes his additive PMS share: $s_p = (A*B+C + S_q) \mod p$
+
+7. decrypts and gets $A*B+C + S_q$
+
+8. computes his additive PMS share: $s_p = (A*B+C + S_q) \mod p$
 
 
 The protocol described above is secure against Notary sending malicious inputs. Indeed, because Client only sends back masked values, Notary cannot learn anything about those values.
