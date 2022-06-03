@@ -169,14 +169,21 @@ Using Garbled Circuit (GC) (https://en.wikipedia.org/wiki/Garbled_circuit), each
 In order to prevent malicious garbling, a dual execution protocol is used where Notary and Client take turns garbling/evaluating the same circuit. This reduces the bandwidth requirement by a factor of 5 compared to the state-of-the-art Authenticated Garbling (AG) (https://eprint.iacr.org/2017/030). (For reference: a standard 2KB request using AG would require Client to download 320MB of data from Notary).
 The dual execution protocol is as follows:
 
-1. N acts as the garbler and C acts as the evaluator of a circuit. C evaluates the circuit, gets output $OUT_c$.
-2. C acts as the garbler and N acts as the evaluator of the same circuit. N evaluates the circuit, gets output $OUT_n$.
-3. C sends to N a hash commitment $H(OUT_c + salt)$.
-4. N sends to C $OUT_n$. 
-5. C check that $OUT_n = OUT_c$, otherwise aborts because N was cheating.
-6. C reveals the committed values by sending to N $OUT_c + salt$. N check the commitment and that $OUT_n == OUT_c$, otherwise aborts because C was cheating.
+1. N acts as the garbler and C acts as the evaluator of a circuit. C evaluates the circuit, gets encoded output $\color{blue}OUT_c$.
+2. C acts as the garbler and N acts as the evaluator of the same circuit. N evaluates the circuit, gets encoded output $\color{brown}OUT_n$.
+3. C sends to N a hash commitment $H(\color{blue}OUT_c + DecodingTable_c + salt)$.
+4. N sends to C $\color{brown}OUT_n$ and $\color{brown}DecodingTable_n$.
+5. C decodes $\color{blue}OUT_c$ with $\color{brown}DecodingTable_n$ and gets $\color{blue}Plaintext_c$.
+6. C decodes $\color{brown}OUT_n$ with $\color{blue}DecodingTable_c$ and gets $\color{brown}Plaintext_n$.
+7. C checks that $\color{blue}Plaintext_c == \color{brown}Plaintext_n$, otherwise aborts because N was cheating.
+8. C reveals the committed values by sending to N $\color{blue}OUT_c + DecodingTable_c + salt$. 
+9. N check the commitment.
+10. N decodes $\color{blue}OUT_c$ with $\color{brown}DecodingTable_n$ and gets $\color{blue}Plaintext_c$.
+11. N decodes $\color{brown}OUT_n$ with $\color{blue}DecodingTable_c$ and gets $\color{brown}Plaintext_n$.
+12. N checks that $\color{blue}Plaintext_c == \color{brown}Plaintext_n$, otherwise aborts because C was cheating.
 
-The protocol above assumes that neither $OUT_n$ nor $OUT_c$ leak the other party's secrets. To ensure no leakage, the circuit is constructed so that it doesn't output plaintext values but instead it outputs XOR-masked values. Each party provides their XOR masks as an input to the circuit.
+
+The protocol above assumes that neither $\color{brown}Plaintext_n$ nor $\color{blue}Plaintext_c$ leak the other party's secrets. To ensure no leakage, the circuit is constructed so that it doesn't output plaintext values but instead it outputs XOR-masked values. Each party provides their XOR masks as an input to the circuit.
 
 The protocol above also assumes that each party will provide the exact same inputs for two circuits: one time when acting as the garbler and the second time when acting as the evaluator. Suppose, Notary garbles a circuit maliciously. Then, when Notary acts as the evaluator, he has to provide such inputs to the circuit (honestly garbled by Client) that the output of the honest circuit matches the output of the malicious circuit. Since each of the circuits' output comes after performing either sha256 or AES on the shares of the parties' inputs, the likelihood of Notary succeeding equals to Notary's guessing what the Client's input to the circuit is.
 
