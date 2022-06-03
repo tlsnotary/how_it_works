@@ -183,9 +183,7 @@ The dual execution protocol is as follows:
 12. N checks that $\color{blue}Plaintext_c == \color{brown}Plaintext_n$, otherwise aborts because C was cheating.
 
 
-The protocol above assumes that neither $\color{brown}Plaintext_n$ nor $\color{blue}Plaintext_c$ leak the other party's secrets. To ensure no leakage, the circuit is constructed so that it doesn't output plaintext values but instead it outputs XOR-masked values. Each party provides their XOR masks as an input to the circuit.
-
-The protocol above also assumes that each party will provide the exact same inputs for two circuits: one time when acting as the garbler and the second time when acting as the evaluator. Suppose, Notary garbles a circuit maliciously. Then, when Notary acts as the evaluator, he has to provide such inputs to the circuit (honestly garbled by Client) that the output of the honest circuit matches the output of the malicious circuit. Since each of the circuits' output comes after performing either sha256 or AES on the shares of the parties' inputs, the likelihood of Notary succeeding equals to Notary's guessing what the Client's input to the circuit is.
+The protocol above assumes that each party will provide the exact same inputs for two circuits: one time when acting as the garbler and the second time when acting as the evaluator. Suppose, Notary garbles a circuit maliciously. Then, when Notary acts as the evaluator, he has to provide such inputs to the circuit (honestly garbled by Client) that the output of the honest circuit matches the output of the malicious circuit. Since each of the circuits' output comes after performing either sha256 or AES on the shares of the parties' inputs, the likelihood of Notary succeeding equals to Notary's guessing what the Client's input to the circuit is.
 
 
 ## 3. Encrypting the client request. <a name="section3"></a> 
